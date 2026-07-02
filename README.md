@@ -58,15 +58,15 @@ source install/setup.bash
 Assign ID `1`:
 
 ```bash
-ros2 run ddsm115_motor_driver_ros2 ddsm115_set_id.py /dev/ttyUSB0 1
+ros2 run ddsm115_motor_driver_ros2 ddsm115_set_id.py /dev/ttyACM0 1
 ```
 
 Power-cycle the motor after the command finishes, then repeat for the other motors:
 
 ```bash
-ros2 run ddsm115_motor_driver_ros2 ddsm115_set_id.py /dev/ttyUSB0 2
-ros2 run ddsm115_motor_driver_ros2 ddsm115_set_id.py /dev/ttyUSB0 3
-ros2 run ddsm115_motor_driver_ros2 ddsm115_set_id.py /dev/ttyUSB0 4
+ros2 run ddsm115_motor_driver_ros2 ddsm115_set_id.py /dev/ttyACM0 2
+ros2 run ddsm115_motor_driver_ros2 ddsm115_set_id.py /dev/ttyACM0 3
+ros2 run ddsm115_motor_driver_ros2 ddsm115_set_id.py /dev/ttyACM0 4
 ```
 
 ## Dependencies
@@ -113,7 +113,7 @@ The important hardware settings are:
 ```xml
 <hardware>
   <plugin>ddsm115_motor_driver_ros2/Ddsm115HardwareInterface</plugin>
-  <param name="port_name">/dev/ttyUSB0</param>
+  <param name="port_name">/dev/ttyACM0</param>
 </hardware>
 ```
 
