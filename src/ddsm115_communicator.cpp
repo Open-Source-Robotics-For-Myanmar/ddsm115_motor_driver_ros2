@@ -173,7 +173,7 @@ DriveResponse Communicator::set_wheel_rpm(int wheel_id, double rpm)
     static_cast<uint16_t>((static_cast<uint16_t>(drive_response[6]) << 8) | drive_response[7]);
 
   result.velocity = static_cast<double>(drive_velocity);
-  result.position = static_cast<double>(drive_position) * (360.0 / 32767.0);
+  result.position = static_cast<double>(drive_position) * (360.0 / 32767.0); // encoder count စစ်ရန်
   result.current = static_cast<double>(drive_current) * (8.0 / 32767.0);
   result.result = State::normal;
   return result;
