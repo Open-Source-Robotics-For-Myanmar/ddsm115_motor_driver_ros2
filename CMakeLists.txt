@@ -35,7 +35,9 @@ install(TARGETS ddsm115_hardware_interface
   RUNTIME DESTINATION bin
 )
 
-install(PROGRAMS scripts/ddsm115_set_id.py
+install(PROGRAMS
+  scripts/ddsm115_set_id.py
+  scripts/ddsm115_encoder_count_printer.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

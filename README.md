@@ -243,6 +243,25 @@ Check odometry:
 ros2 topic echo /diff_drive_controller/odom
 ```
 
+## Print Wheel Encoder Counts
+
+With the motor-driver launch running, start the encoder-count printer in a
+second terminal:
+
+```bash
+source install/setup.bash
+ros2 run ddsm115_motor_driver_ros2 ddsm115_encoder_count_printer.py
+```
+
+It prints every wheel received on `/joint_states` as a continuous encoder count
+using the DDSM115 scale of `32767` counts per revolution. To change the output
+rate (seconds) or input topic:
+
+```bash
+ros2 run ddsm115_motor_driver_ros2 ddsm115_encoder_count_printer.py \
+  --ros-args -p print_period:=1.0 -p joint_states_topic:=/joint_states
+```
+
 ## Troubleshooting
 
 If `joint_state_broadcaster` prints this, it is normal:
