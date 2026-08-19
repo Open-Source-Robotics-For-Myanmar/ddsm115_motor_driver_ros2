@@ -92,8 +92,8 @@ Notes:
 - `drive_velocity` (int16) → `velocity` (in `DriveResponse`) stores the raw numeric RPM value. The hardware interface then calls:
   - `rpm_to_velocity(rpm) = rpm / 60.0 * (2π)` to get radians/second before applying to joint states.
 
-- `drive_position` (uint16) → `position_deg = drive_position * (360.0 / 32767.0)`
-  - This maps raw 0..32767 to 0..360 degrees (device uses 32767 as counts-per-revolution reference).
+- `drive_position` (uint16) → `position_rad = drive_position * (2π / 32767)`.
+  - This maps raw 0..32767 to one encoder revolution. The hardware interface unwraps consecutive readings into a continuous joint position.
 
 ### Validation checks performed by the code
 
@@ -117,7 +117,7 @@ Notes:
    - `current_A = drive_current * (8.0 / 32767.0)`
    - `velocity_rpm = (double) drive_velocity`
    - `velocity_rad_s = velocity_rpm / 60.0 * 2π`
-   - `position_deg = drive_position * (360.0 / 32767.0)`
+   - `position_rad = drive_position * (2π / 32767.0)`
 
 ---
 
@@ -138,7 +138,7 @@ Note: CRC bytes are shown as `CRC` placeholders. Use the provided Python snippet
   - CMD = 0x64
   - current = 0x0064 = 100 → current_A = 100 * (8/32767) ≈ 0.0244 A
   - velocity assembled from bytes [5]<<8 | [4] => 0x0010 = 16 rpm → 1.676 rad/s
-  - position = 0x0080 = 128 → position_deg = 128 * (360/32767) ≈ 1.406°
+  - position = 0x0080 = 128 → position_rad = 128 * (2π/32767) ≈ 0.0245 rad
 
 ---
 
@@ -185,10 +185,10 @@ def decode_response(resp: bytes, expected_id: int):
     current_A = drive_current * (8.0 / 32767.0)
     velocity_rpm = float(drive_velocity)
     velocity_rad_s = velocity_rpm / 60.0 * 2.0 * 3.141592653589793
-    position_deg = drive_position * (360.0 / 32767.0)
+    position_rad = drive_position * (2.0 * 3.141592653589793 / 32767.0)
 
     return dict(current_A=current_A, velocity_rpm=velocity_rpm,
-                velocity_rad_s=velocity_rad_s, position_deg=position_deg)
+                velocity_rad_s=velocity_rad_s, position_rad=position_rad)
 ```
 
 ---

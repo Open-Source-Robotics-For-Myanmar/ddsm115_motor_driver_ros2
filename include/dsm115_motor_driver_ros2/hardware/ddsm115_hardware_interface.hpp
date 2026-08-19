@@ -48,10 +48,13 @@ private:
     double velocity{0.0};
     double command{0.0};
     double last_command{0.0};
+    double last_encoder_position{0.0};
+    bool has_encoder_position{false};
   };
 
   static double velocity_to_rpm(double velocity);
   static double rpm_to_velocity(double rpm);
+  static void update_wheel_state(Wheel & wheel, const ddsm115::DriveResponse & response);
 
   bool parse_wheel_parameters();
   bool validate_joint_interfaces() const;

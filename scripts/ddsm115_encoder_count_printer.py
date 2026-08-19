@@ -8,7 +8,9 @@ from rclpy.node import Node
 from sensor_msgs.msg import JointState
 
 
-COUNTS_PER_REVOLUTION = 32767.0
+COUNTS_PER_REVOLUTION = 32767.0  #4096 သွားဖတ်တော့
+WHEEL_COLORS = ("\033[31m", "\033[33m", "\033[32m", "\033[36m")
+ANSI_RESET = "\033[0m"
 
 
 class EncoderCountPrinter(Node):
@@ -40,17 +42,18 @@ class EncoderCountPrinter(Node):
 
         state = self._latest_state
         count_text = []
-        for name, position in zip(state.name, state.position):
+        for wheel_index, (name, position) in enumerate(zip(state.name, state.position)):
             counts = round(position / (2.0 * math.pi) * COUNTS_PER_REVOLUTION)
-            count_text.append(f"{name}: {counts} counts ({position:.4f} rad)")
+            color = WHEEL_COLORS[wheel_index % len(WHEEL_COLORS)]
+            count_text.append(
+                f"{color}{name}: {counts} counts ({position:.4f} rad){ANSI_RESET}")
 
         if not count_text:
             self.get_logger().warn("Received a JointState without positions")
             return
 
-        self.get_logger().info(" | ".join(count_text))
-
-
+        self.get_logger().info("\n" + "\n".join(count_text))
+        
 def main(args=None) -> None:
     rclpy.init(args=args)
     node = EncoderCountPrinter()

@@ -142,6 +142,7 @@ hardware_interface::CallbackReturn Ddsm115HardwareInterface::on_activate(
   for (auto & wheel : wheels_) {
     wheel.command = 0.0;
     wheel.last_command = std::numeric_limits<double>::quiet_NaN();
+    wheel.has_encoder_position = false;
   }
   stop_all_wheels();
   RCLCPP_INFO(kLogger, "Activated DDSM115 hardware");
@@ -169,15 +170,22 @@ hardware_interface::CallbackReturn Ddsm115HardwareInterface::on_cleanup(
 
 hardware_interface::return_type Ddsm115HardwareInterface::read(
   const rclcpp::Time &,
-  const rclcpp::Duration & period)
+  const rclcpp::Duration &)
 {
-  const double dt = period.seconds();
-  if (dt <= 0.0) {
-    return hardware_interface::return_type::OK;
+  if (!communicator_) {
+    return hardware_interface::return_type::ERROR;
   }
 
+  // The DDSM115 returns its encoder position only in response to a drive packet.
+  // Re-send the current command on every read so manual wheel movement is observed
+  // even when the command itself has not changed.
   for (auto & wheel : wheels_) {
-    wheel.position += wheel.velocity * dt;
+    const double command = std::abs(wheel.command) < command_deadband_ ? 0.0 : wheel.command;
+    const auto response = communicator_->set_wheel_rpm(
+      wheel.id, velocity_to_rpm(command) * wheel.direction);
+    if (response.result == ddsm115::State::normal) {
+      update_wheel_state(wheel, response);
+    }
   }
 
   return hardware_interface::return_type::OK;
@@ -203,7 +211,7 @@ hardware_interface::return_type Ddsm115HardwareInterface::write(
       wheel.id,
       velocity_to_rpm(command) * wheel.direction);
     if (response.result == ddsm115::State::normal) {
-      wheel.velocity = rpm_to_velocity(response.velocity) * wheel.direction;
+      update_wheel_state(wheel, response);
     } else {
       wheel.velocity = command;
     }
@@ -221,6 +229,23 @@ double Ddsm115HardwareInterface::velocity_to_rpm(double velocity)
 double Ddsm115HardwareInterface::rpm_to_velocity(double rpm)
 {
   return rpm / 60.0 * (M_PI * 2.0);
+}
+
+void Ddsm115HardwareInterface::update_wheel_state(
+  Wheel & wheel, const ddsm115::DriveResponse & response)
+{
+  const double encoder_position = response.position;
+  if (wheel.has_encoder_position) {
+    // Encoder position is one revolution (0 to 2 pi), so unwrap it into a
+    // continuous joint position while retaining the configured joint direction.
+    wheel.position += std::remainder(
+      encoder_position - wheel.last_encoder_position, 2.0 * M_PI) * wheel.direction;
+  } else {
+    wheel.has_encoder_position = true;
+  }
+
+  wheel.last_encoder_position = encoder_position;
+  wheel.velocity = rpm_to_velocity(response.velocity) * wheel.direction;
 }
 
 bool Ddsm115HardwareInterface::parse_wheel_parameters()
