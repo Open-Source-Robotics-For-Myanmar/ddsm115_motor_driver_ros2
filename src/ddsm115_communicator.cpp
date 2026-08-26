@@ -173,9 +173,9 @@ DriveResponse Communicator::set_wheel_rpm(int wheel_id, double rpm)
     static_cast<uint16_t>((static_cast<uint16_t>(drive_response[6]) << 8) | drive_response[7]);
 
   result.velocity = static_cast<double>(drive_velocity);
-  result.position = static_cast<double>(drive_position) * (2.0 * M_PI / 32767.0);
+  result.position = static_cast<double>(drive_position) * (2.0 * M_PI / 4096.0); // care AI wrote 32767
   result.raw_counts = drive_position;
-  result.current = static_cast<double>(drive_current) * (8.0 / 32767.0);
+  result.current = static_cast<double>(drive_current) * (8.0 / 4096.0);
   result.result = State::normal;
   return result;
 }
