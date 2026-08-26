@@ -174,6 +174,7 @@ DriveResponse Communicator::set_wheel_rpm(int wheel_id, double rpm)
 
   result.velocity = static_cast<double>(drive_velocity);
   result.position = static_cast<double>(drive_position) * (2.0 * M_PI / 32767.0);
+  result.raw_counts = drive_position;
   result.current = static_cast<double>(drive_current) * (8.0 / 32767.0);
   result.result = State::normal;
   return result;

@@ -10,6 +10,7 @@
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "pluginlib/class_list_macros.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include <sstream>
 
 namespace ddsm115_motor_driver_ros2
 {
@@ -142,7 +143,7 @@ hardware_interface::CallbackReturn Ddsm115HardwareInterface::on_activate(
   for (auto & wheel : wheels_) {
     wheel.command = 0.0;
     wheel.last_command = std::numeric_limits<double>::quiet_NaN();
-    wheel.has_encoder_position = false;
+    wheel.has_encoder_position = false;  // သတိပြုရန်
   }
   stop_all_wheels();
   RCLCPP_INFO(kLogger, "Activated DDSM115 hardware");
@@ -186,6 +187,16 @@ hardware_interface::return_type Ddsm115HardwareInterface::read(
     if (response.result == ddsm115::State::normal) {
       update_wheel_state(wheel, response);
     }
+  }
+
+  // Log raw encoder counts for debugging/monitoring
+  {
+    std::ostringstream oss;
+    oss << "Raw encoder counts:";
+    for (const auto & wheel : wheels_) {
+      oss << ' ' << wheel.joint_name << '=' << wheel.last_encoder_raw;
+    }
+    RCLCPP_INFO(kLogger, "%s", oss.str().c_str());
   }
 
   return hardware_interface::return_type::OK;
@@ -235,6 +246,7 @@ void Ddsm115HardwareInterface::update_wheel_state(
   Wheel & wheel, const ddsm115::DriveResponse & response)
 {
   const double encoder_position = response.position;
+  const int encoder_raw = static_cast<int>(response.raw_counts);
   if (wheel.has_encoder_position) {
     // Encoder position is one revolution (0 to 2 pi), so unwrap it into a
     // continuous joint position while retaining the configured joint direction.
@@ -245,6 +257,7 @@ void Ddsm115HardwareInterface::update_wheel_state(
   }
 
   wheel.last_encoder_position = encoder_position;
+  wheel.last_encoder_raw = encoder_raw;
   wheel.velocity = rpm_to_velocity(response.velocity) * wheel.direction;
 }
 

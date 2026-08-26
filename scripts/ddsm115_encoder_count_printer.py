@@ -8,7 +8,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import JointState
 
 
-COUNTS_PER_REVOLUTION = 32767.0  #4096 သွားဖတ်တော့
+COUNTS_PER_REVOLUTION = 4096 #32767.0  #4096 သွားဖတ်တော့
 WHEEL_COLORS = ("\033[31m", "\033[33m", "\033[32m", "\033[36m")
 ANSI_RESET = "\033[0m"
 

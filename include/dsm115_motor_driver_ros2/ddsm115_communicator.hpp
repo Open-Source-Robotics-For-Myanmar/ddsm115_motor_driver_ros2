@@ -26,6 +26,7 @@ struct DriveResponse
   double current{0.0};
   double velocity{0.0};
   double position{0.0};
+  uint16_t raw_counts{0};
   State result{State::failed};
 };
 

@@ -49,6 +49,7 @@ private:
     double command{0.0};
     double last_command{0.0};
     double last_encoder_position{0.0};
+    int last_encoder_raw{0};
     bool has_encoder_position{false};
   };
 
@@ -65,6 +66,7 @@ private:
   double command_change_epsilon_{0.001};
   std::vector<Wheel> wheels_;
   std::unique_ptr<ddsm115::Communicator> communicator_;
+  // Raw encoder last reading stored in Wheel::last_encoder_raw; logging occurs in cpp.
 };
 
 }  // namespace ddsm115_motor_driver_ros2
